@@ -14,6 +14,7 @@
 		545F3A3D28853CEB00A64103 /* EbiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545F3A3C28853CEB00A64103 /* EbiTests.swift */; };
 		545F3A4728853CEB00A64103 /* EbiUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545F3A4628853CEB00A64103 /* EbiUITests.swift */; };
 		545F3A4928853CEB00A64103 /* EbiUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545F3A4828853CEB00A64103 /* EbiUITestsLaunchTests.swift */; };
+		545F3A5628853D5200A64103 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545F3A5528853D5200A64103 /* GameScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		545F3A4228853CEB00A64103 /* EbiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EbiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		545F3A4628853CEB00A64103 /* EbiUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EbiUITests.swift; sourceTree = "<group>"; };
 		545F3A4828853CEB00A64103 /* EbiUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EbiUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		545F3A5528853D5200A64103 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,9 +96,10 @@
 		545F3A2A28853CE900A64103 /* Ebi */ = {
 			isa = PBXGroup;
 			children = (
+				545F3A2F28853CEB00A64103 /* Assets.xcassets */,
 				545F3A2B28853CE900A64103 /* EbiApp.swift */,
 				545F3A2D28853CE900A64103 /* ContentView.swift */,
-				545F3A2F28853CEB00A64103 /* Assets.xcassets */,
+				545F3A5728853F5500A64103 /* Scenes */,
 				545F3A3128853CEB00A64103 /* Preview Content */,
 			);
 			path = Ebi;
@@ -125,6 +128,14 @@
 				545F3A4828853CEB00A64103 /* EbiUITestsLaunchTests.swift */,
 			);
 			path = EbiUITests;
+			sourceTree = "<group>";
+		};
+		545F3A5728853F5500A64103 /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				545F3A5528853D5200A64103 /* GameScene.swift */,
+			);
+			path = Scenes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -257,6 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				545F3A5628853D5200A64103 /* GameScene.swift in Sources */,
 				545F3A2E28853CE900A64103 /* ContentView.swift in Sources */,
 				545F3A2C28853CE900A64103 /* EbiApp.swift in Sources */,
 			);

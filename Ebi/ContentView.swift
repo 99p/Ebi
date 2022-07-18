@@ -6,11 +6,11 @@
 //
 
 import SwiftUI
+import SpriteKit
 
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        SpriteView(scene: GameScene(), debugOptions: [.showsFPS, .showsDrawCount])
     }
 }
 
