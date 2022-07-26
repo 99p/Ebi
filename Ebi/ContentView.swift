@@ -11,6 +11,7 @@ import SpriteKit
 struct ContentView: View {
     var body: some View {
         SpriteView(scene: GameScene(), debugOptions: [.showsFPS, .showsDrawCount])
+            .edgesIgnoringSafeArea(.all)
     }
 }
 
