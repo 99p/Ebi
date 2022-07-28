@@ -10,6 +10,10 @@ import SpriteKit
 
 class GameScene: SKScene {
     
+    struct Constants{
+        static let PlayerImages = [ "shrimp01", "shrimp02", "shrimp03", "shrimp04" ]
+    }
+    
     struct ColliderType {
         static let Player: UInt32 = (1 << 0)
         static let World:  UInt32 = (1 << 1)
@@ -22,6 +26,8 @@ class GameScene: SKScene {
     var coralNode: SKNode!
     var yscale: CGFloat = 0.0
     
+    var player: SKSpriteNode!
+    
     override func sceneDidLoad() {
         self.scaleMode = .resizeFill
 //        self.anchorPoint = CGPoint(x: 0.5,
@@ -29,6 +35,9 @@ class GameScene: SKScene {
     }
     
     override func didMove(to view: SKView) {
+        
+        self.physicsWorld.gravity = CGVector(dx: 0.0, dy: -2.0)
+        
         // 全ノードの親となるノードを生成
         baseNode = SKNode()
         baseNode.speed = 1.0
@@ -42,6 +51,18 @@ class GameScene: SKScene {
         self.setupBackgroundSea()
         self.setupBackgroundRock()
         self.setupCeilingAndLand()
+        
+        self.setupPlayer()
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch: AnyObject in touches{
+            let location = touch.location(in: self)
+            // プレイヤーに加えられている力をゼロにする
+            player.physicsBody?.velocity = CGVector.zero
+            // ぷれいやーにy軸方向へ力を加える
+            player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 23.0))
+        }
     }
     
     func setupBackgroundSea(){
@@ -195,6 +216,40 @@ class GameScene: SKScene {
         }
 
         
+    }
+    
+    func setupPlayer(){
+        // Playerのパラパラアニメーション作成に必要なSKTextureクラスの配列を定義
+        var playerTexture = [SKTexture]()
+        
+        // パラパラアニメーションに必要な画像を読み込む
+        for imageName in Constants.PlayerImages{
+            let texture = SKTexture(imageNamed: imageName)
+            texture.filteringMode = .linear
+            playerTexture.append(texture)
+        }
+        
+        // パラパラ漫画のアニメーションを作成
+        let playerAnimation = SKAction.animate(with: playerTexture, timePerFrame: 0.2)
+        let loopAnimation = SKAction.repeatForever(playerAnimation)
+        
+        // キャラクターを生成し、アニメーションを設定
+        player = SKSpriteNode(texture: playerTexture[0])
+        player.position = CGPoint(x: self.frame.size.width * 0.35, y: self.frame.size.height * 0.6)
+        player.run(loopAnimation)
+        
+        // 物理シミュレーションを設定
+        player.physicsBody = SKPhysicsBody(texture: playerTexture[0], size: playerTexture[0].size())
+        player.physicsBody?.isDynamic = true
+        player.physicsBody?.allowsRotation = false
+        
+        //自分自身にPlayerカテゴリを設定
+        player.physicsBody?.categoryBitMask = ColliderType.Player
+        //衝突判定相手にWorldとCoralを設定
+        player.physicsBody?.collisionBitMask = ColliderType.World | ColliderType.Coral
+        player.physicsBody?.contactTestBitMask = ColliderType.World | ColliderType.Coral
+        
+        self.addChild(player)
     }
     
 }
