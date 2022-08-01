@@ -53,6 +53,7 @@ class GameScene: SKScene {
         self.setupCeilingAndLand()
         
         self.setupPlayer()
+        self.setupCoral()
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -62,6 +63,8 @@ class GameScene: SKScene {
             player.physicsBody?.velocity = CGVector.zero
             // ぷれいやーにy軸方向へ力を加える
             player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 23.0))
+            
+            print(location)
         }
     }
     
@@ -250,6 +253,75 @@ class GameScene: SKScene {
         player.physicsBody?.contactTestBitMask = ColliderType.World | ColliderType.Coral
         
         self.addChild(player)
+    }
+    
+    func setupCoral(){
+        // load Coral image
+        let coralUnder = SKTexture(imageNamed: "coral_under")
+        coralUnder.filteringMode = .linear
+        let coralAbove = SKTexture(imageNamed: "coral_above")
+        coralAbove.filteringMode = .linear
+        
+        // calc move distance
+        let distanceToMove = CGFloat(self.frame.size.width + 2.0 * coralUnder.size().width)
+        
+        // make anim
+        let moveAnim = SKAction.moveBy(x: -distanceToMove, y: 0.0, duration: TimeInterval(distanceToMove / 100.0))
+        let removeAnim = SKAction.removeFromParent()
+        let coralAnim = SKAction.sequence([moveAnim, removeAnim])
+        
+        // サンゴを生成するメソッドを呼び出すアニメーションを作成
+        let newCoralAnim = SKAction.run({
+            // make Coral's Node
+            let coral = SKNode()
+            coral.position = CGPoint(x: self.frame.size.width + coralUnder.size().width * 2, y: 0.0)
+            coral.zPosition = -40.0
+            
+            // calc bottom Coral's y coordinate
+            let height = UInt32(self.frame.size.height / 12)
+            let y = CGFloat(arc4random_uniform(height * 2) + height)
+            
+            // gen bottom Coral
+            let under = SKSpriteNode(texture: coralUnder)
+            under.position = CGPoint(x: 0.0, y: y)
+            
+            // set Physics to Coral
+            under.physicsBody = SKPhysicsBody(texture: coralUnder, size: under.size)
+            under.physicsBody?.isDynamic = false
+            under.physicsBody?.categoryBitMask = ColliderType.Coral
+            under.physicsBody?.contactTestBitMask = ColliderType.Player
+            coral.addChild(under)
+            
+            // gen top Coral
+            let above = SKSpriteNode(texture: coralAbove)
+            above.position = CGPoint(x: 0.0, y: y + (under.size.height / 2.0) + 160.0 + (above.size.height / 2.0))
+            
+            // set physics to Coral
+            above.physicsBody = SKPhysicsBody(texture: coralAbove, size: above.size)
+            above.physicsBody?.isDynamic = false
+            above.physicsBody?.categoryBitMask = ColliderType.Coral
+            above.physicsBody?.contactTestBitMask = ColliderType.Player
+            coral.addChild(above)
+            
+            // gen countup Score Node
+            let scoreNode = SKNode()
+            scoreNode.position = CGPoint(x: (above.size.width / 2.0) + 5.0, y: self.frame.height / 2.0)
+            
+            // set physics to ScoreNode
+            scoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 10.0, height: self.frame.size.height))
+            scoreNode.physicsBody?.isDynamic = false
+            scoreNode.physicsBody?.categoryBitMask = ColliderType.Score
+            scoreNode.physicsBody?.contactTestBitMask = ColliderType.Player
+            coral.addChild(scoreNode)
+            
+            coral.run(coralAnim)
+            self.coralNode.addChild(coral)
+            
+        })
+        let delayAnim = SKAction.wait(forDuration: 2.5)
+        let repeatForeverAnim = SKAction.repeatForever(SKAction.sequence([newCoralAnim, delayAnim]))
+        
+        self.run(repeatForeverAnim)
     }
     
 }
