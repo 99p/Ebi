@@ -8,7 +8,7 @@
 import SwiftUI
 import SpriteKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     struct Constants{
         static let PlayerImages = [ "shrimp01", "shrimp02", "shrimp03", "shrimp04" ]
@@ -28,6 +28,9 @@ class GameScene: SKScene {
     
     var player: SKSpriteNode!
     
+    var scoreLabelNode: SKLabelNode!
+    var score: UInt32!
+    
     override func sceneDidLoad() {
         self.scaleMode = .resizeFill
 //        self.anchorPoint = CGPoint(x: 0.5,
@@ -36,7 +39,10 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         
+        score = 0
+        
         self.physicsWorld.gravity = CGVector(dx: 0.0, dy: -2.0)
+        self.physicsWorld.contactDelegate = self
         
         // 全ノードの親となるノードを生成
         baseNode = SKNode()
@@ -54,17 +60,77 @@ class GameScene: SKScene {
         
         self.setupPlayer()
         self.setupCoral()
+        self.setupScoreLabel()
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch: AnyObject in touches{
-            let location = touch.location(in: self)
-            // プレイヤーに加えられている力をゼロにする
-            player.physicsBody?.velocity = CGVector.zero
-            // ぷれいやーにy軸方向へ力を加える
-            player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 23.0))
+        if 0.0 < baseNode.speed {
+            for touch: AnyObject in touches{
+                let location = touch.location(in: self)
+                // プレイヤーに加えられている力をゼロにする
+                player.physicsBody?.velocity = CGVector.zero
+                // ぷれいやーにy軸方向へ力を加える
+                player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 23.0))
+            }
+        } else if baseNode.speed == 0.0 && player.speed == 0.0 {
+            // remove all coral
+            coralNode.removeAllChildren()
             
-            print(location)
+            // reset Score
+            score = 0
+            scoreLabelNode.text = String(score)
+            
+            // reset player pos
+            player.position = CGPoint(x: self.frame.size.width * 0.35, y: self.frame.size.height * 0.6)
+            player.physicsBody?.velocity = CGVector.zero
+            player.physicsBody?.collisionBitMask = ColliderType.World | ColliderType.Coral
+            player.zRotation = 0.0
+            
+            // start anim
+            player.speed = 1.0
+            baseNode.speed = 1.0
+            
+        }
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        // if already Gameover
+        if baseNode.speed <= 0.0 {
+            return
+        }
+        
+        let rawScoreType = ColliderType.Score
+        let rawNoneType = ColliderType.None
+        if (contact.bodyA.categoryBitMask & rawScoreType) == rawScoreType || (contact.bodyB.categoryBitMask & rawScoreType) == rawScoreType {
+            // add Score
+            score = score + 1
+            scoreLabelNode.text = String(score)
+            
+            // Animate ScoreLabel
+            let scaleUpAnim = SKAction.scale(to: 1.5, duration: 0.1)
+            let scaleDownAnim = SKAction.scale(to: 1.0, duration: 0.1)
+            scoreLabelNode.run(SKAction.sequence([scaleUpAnim, scaleDownAnim]))
+            
+            // change Score bitmask
+            if (contact.bodyA.categoryBitMask & rawScoreType) == rawScoreType {
+                contact.bodyA.categoryBitMask = ColliderType.None
+                contact.bodyA.contactTestBitMask = ColliderType.None
+            } else {
+                contact.bodyB.categoryBitMask = ColliderType.None
+                contact.bodyB.contactTestBitMask = ColliderType.None
+            }
+        } else if (contact.bodyA.categoryBitMask & rawNoneType) == rawNoneType || (contact.bodyB.categoryBitMask & rawNoneType) == rawNoneType {
+            // pass
+        } else {
+            // stop ALL baseNode anim
+            baseNode.speed = 0.0
+            // change player bitmask
+            player.physicsBody?.collisionBitMask = ColliderType.World
+            // enforce player rotate anim
+            let rolling = SKAction.rotate(byAngle: CGFloat(M_PI) * player.position.y * 0.01, duration: 1.0)
+            player.run(rolling, completion: {
+                self.player.speed = 0.0
+            })
         }
     }
     
@@ -322,6 +388,17 @@ class GameScene: SKScene {
         let repeatForeverAnim = SKAction.repeatForever(SKAction.sequence([newCoralAnim, delayAnim]))
         
         self.run(repeatForeverAnim)
+    }
+    
+    func setupScoreLabel(){
+        // gen Label as "Arial Bold"
+        scoreLabelNode = SKLabelNode(fontNamed: "Arial Bold")
+        scoreLabelNode.fontColor = UIColor.black
+        scoreLabelNode.position = CGPoint(x: self.frame.width / 2.0, y: self.frame.height * 0.9)
+        scoreLabelNode.zPosition = 100.0
+        scoreLabelNode.text = String(score)
+        
+        self.addChild(scoreLabelNode)
     }
     
 }
